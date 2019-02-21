@@ -3,13 +3,10 @@ const app = express()
 const port = 3000
 
 var redis = require("redis"),
-    client = redis.createClient();
+    client = redis.createClient(6379, 'redis');
 
 client.on('ready',function() {
     console.log("Redis is ready");
-    client.set('hits', '0', (err, reply) => {
-        console.log('hits: '+reply);
-    });
 });
 client.on("error", function (err) {
     console.log("Error " + err);
@@ -17,14 +14,13 @@ client.on("error", function (err) {
 
 app.get('/', (req, res) => {
     client.get('hits', (err, reply) => {
-        console.log('hits: '+reply);
-        if(isNaN(reply)) {
+        if(isNaN(reply) || reply === null) {
             hits = 1;
         } else {
             hits = parseInt(reply) + 1;
         }
         client.set('hits', ''+hits, (err, reply) => {
-            res.send('Playground app hit: '+hits);
+            res.send('Playground app hits: '+hits);
         });
     });
 })
